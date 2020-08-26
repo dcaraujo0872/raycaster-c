@@ -27,6 +27,9 @@ void destroyWindow(void);
 void clearColorBuffer(uint32_t color);
 void renderColorBuffer(void);
 void generate3DProjection(void);
+void renderCeiling(int wallTop, int rayIndex);
+void renderWall(int wallTop, int wallBottom, int wallHeight, int rayIndex);
+void renderFloor(int wallBottom, int rayIndex);
 
 int main() {
     isGameRunning = initializeWindow();
@@ -96,7 +99,7 @@ void setup(void) {
     wallTexture = (uint32_t*) malloc(sizeof(uint32_t) * (uint32_t)TEXTURE_WIDTH * (uint32_t)TEXTURE_HEIGHT);
 
     // load an external texture using the upng library to decode the file
-    pngTexture = upng_new_from_file(PIKUMA_TEXTURE_FILEPATH);
+    pngTexture = upng_new_from_file(WOOD_TEXTURE_FILEPATH);
     if (pngTexture != NULL) {
         upng_decode(pngTexture);
         if (upng_get_error(pngTexture) == UPNG_EOK) {
@@ -211,35 +214,40 @@ void generate3DProjection(void) {
         int wallBottomPixel = (WINDOW_HEIGHT / 2) + (wallStripHeight / 2);
         wallBottomPixel = wallBottomPixel > WINDOW_HEIGHT ? WINDOW_HEIGHT : wallBottomPixel;
 
-        // set the color of the ceiling
-        for (int y = 0; y < wallTopPixel; y++) {
-            colorBuffer[(WINDOW_WIDTH * y) + i] = 0xFF444444;
-        }
+        renderCeiling(wallTopPixel, i);
+        renderWall(wallTopPixel, wallBottomPixel, wallStripHeight, i);
+        renderFloor(wallBottomPixel, i);
+    }
+}
 
-        int textureOffsetX;
-        if (rays[i].wasHitVertical) {
-            textureOffsetX = (int)rays[i].wallHitY % TILE_SIZE;
-        }
-        else {
-            textureOffsetX = (int)rays[i].wallHitX % TILE_SIZE;
-        }
+void renderCeiling(int wallTop, int rayIndex) {
+    for (int y = 0; y < wallTop; y++) {
+        colorBuffer[(WINDOW_WIDTH * y) + rayIndex] = 0xFF444444;
+    }
+}
 
-        // get the correct texture id number from the map content
-        int texNum = rays[i].wallHitContent - 1;
+void renderWall(int wallTop, int wallBottom, int wallHeight, int rayIndex) {
+    int textureOffsetX;
+    if (rays[rayIndex].wasHitVertical) {
+        textureOffsetX = (int)rays[rayIndex].wallHitY % TILE_SIZE;
+    }
+    else {
+        textureOffsetX = (int)rays[rayIndex].wallHitX % TILE_SIZE;
+    }
 
-        // render the wall from wallTopPixel to wallBottomPixel
-        for (int y = wallTopPixel; y < wallBottomPixel; y++) {
-            int distanceFromTop = y + (wallStripHeight / 2) - (WINDOW_HEIGHT / 2);
-            int textureOffsetY = distanceFromTop * ((float)TEXTURE_HEIGHT / wallStripHeight);
+    // render the wall from wallTopPixel to wallBottomPixel
+    for (int y = wallTop; y < wallBottom; y++) {
+        int distanceFromTop = y + (wallHeight / 2) - (WINDOW_HEIGHT / 2);
+        int textureOffsetY = distanceFromTop * ((float)TEXTURE_HEIGHT / wallHeight);
 
-            // set the color of the wall texture based on the color from the texture in memory
-            uint32_t texelColor = wallTexture[(TEXTURE_WIDTH * textureOffsetY) + textureOffsetX];
-            colorBuffer[(WINDOW_WIDTH * y) + i] = texelColor;
-        }
+        // set the color of the wall texture based on the color from the texture in memory
+        uint32_t texelColor = wallTexture[(TEXTURE_WIDTH * textureOffsetY) + textureOffsetX];
+        colorBuffer[(WINDOW_WIDTH * y) + rayIndex] = texelColor;
+    }
+}
 
-        // set the color of the floor
-        for (int y = wallBottomPixel; y < WINDOW_HEIGHT; y++) {
-            colorBuffer[(WINDOW_WIDTH * y) + i] = 0xFF888888;
-        }
+void renderFloor(int wallBottom, int rayIndex) {
+    for (int y = wallBottom; y < WINDOW_HEIGHT; y++) {
+        colorBuffer[(WINDOW_WIDTH * y) + rayIndex] = 0xFF888888;
     }
 }
