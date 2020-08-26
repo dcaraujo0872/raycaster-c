@@ -4,6 +4,13 @@
 #include "utils.h"
 #include "constants.h"
 
+typedef struct GridIntersection {
+    float wallHitX;
+    float wallHitY;
+    bool foundWallHit;
+    int content;
+} GridIntersection;
+
 void castRay(Ray *ray, Player *player);
 float calculateHitDistance(Player *player, float hitX, float hitY, bool foundWallHit);
 
@@ -55,10 +62,7 @@ void castRay(Ray *ray, Player *player) {
     ///////////////////////////////////////////
     // HORIZONTAL RAY-GRID INTERSECTION CODE
     ///////////////////////////////////////////
-    int foundHorzWallHit = false;
-    float horzWallHitX = 0;
-    float horzWallHitY = 0;
-    int horzWallContent = 0;
+    GridIntersection horizontalIntersection = { 0 , 0 };
 
     // Find the y-coordinate of the closest horizontal grid intersection
     yintercept = floor(player->y / TILE_SIZE) * TILE_SIZE;
@@ -85,10 +89,10 @@ void castRay(Ray *ray, Player *player) {
 
         if (mapHasWallAt(xToCheck, yToCheck)) {
             // found a wall hit
-            horzWallHitX = nextHorzTouchX;
-            horzWallHitY = nextHorzTouchY;
-            horzWallContent = map[(int)floor(yToCheck / TILE_SIZE)][(int)floor(xToCheck / TILE_SIZE)];
-            foundHorzWallHit = true;
+            horizontalIntersection.wallHitX = nextHorzTouchX;
+            horizontalIntersection.wallHitY = nextHorzTouchY;
+            horizontalIntersection.content = map[(int)floor(yToCheck / TILE_SIZE)][(int)floor(xToCheck / TILE_SIZE)];
+            horizontalIntersection.foundWallHit = true;
             break;
         } else {
             nextHorzTouchX += xstep;
@@ -99,10 +103,7 @@ void castRay(Ray *ray, Player *player) {
     ///////////////////////////////////////////
     // VERTICAL RAY-GRID INTERSECTION CODE
     ///////////////////////////////////////////
-    int foundVertWallHit = false;
-    float vertWallHitX = 0;
-    float vertWallHitY = 0;
-    int vertWallContent = 0;
+    GridIntersection verticalIntersection = { 0 , 0 };
 
     // Find the x-coordinate of the closest horizontal grid intersection
     xintercept = floor(player->x / TILE_SIZE) * TILE_SIZE;
@@ -129,10 +130,10 @@ void castRay(Ray *ray, Player *player) {
 
         if (mapHasWallAt(xToCheck, yToCheck)) {
             // found a wall hit
-            vertWallHitX = nextVertTouchX;
-            vertWallHitY = nextVertTouchY;
-            vertWallContent = map[(int)floor(yToCheck / TILE_SIZE)][(int)floor(xToCheck / TILE_SIZE)];
-            foundVertWallHit = true;
+            verticalIntersection.wallHitX = nextVertTouchX;
+            verticalIntersection.wallHitY = nextVertTouchY;
+            verticalIntersection.content = map[(int)floor(yToCheck / TILE_SIZE)][(int)floor(xToCheck / TILE_SIZE)];
+            verticalIntersection.foundWallHit = true;
             break;
         } else {
             nextVertTouchX += xstep;
@@ -140,20 +141,20 @@ void castRay(Ray *ray, Player *player) {
         }
     }
 
-    float horizontalHitDistance = calculateHitDistance(player, horzWallHitX, horzWallHitY, foundHorzWallHit);
-    float verticalHitDistance = calculateHitDistance(player, vertWallHitX, vertWallHitY, foundVertWallHit);
+    float horizontalHitDistance = calculateHitDistance(player, horizontalIntersection.wallHitX, horizontalIntersection.wallHitY, horizontalIntersection.foundWallHit);
+    float verticalHitDistance = calculateHitDistance(player, verticalIntersection.wallHitX, verticalIntersection.wallHitY, verticalIntersection.foundWallHit);
 
     if (verticalHitDistance < horizontalHitDistance) {
         ray->distance = verticalHitDistance;
-        ray->wallHitX = vertWallHitX;
-        ray->wallHitY = vertWallHitY;
-        ray->wallHitContent = vertWallContent;
+        ray->wallHitX = verticalIntersection.wallHitX;
+        ray->wallHitY = verticalIntersection.wallHitY;
+        ray->wallHitContent = verticalIntersection.content;
         ray->wasHitVertical = true;
     } else {
         ray->distance = horizontalHitDistance;
-        ray->wallHitX = horzWallHitX;
-        ray->wallHitY = horzWallHitY;
-        ray->wallHitContent = horzWallContent;
+        ray->wallHitX = horizontalIntersection.wallHitX;
+        ray->wallHitY = horizontalIntersection.wallHitY;
+        ray->wallHitContent = horizontalIntersection.content;
         ray->wasHitVertical = false;
     }
 }
