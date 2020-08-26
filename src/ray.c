@@ -5,6 +5,7 @@
 #include "constants.h"
 
 void castRay(Ray *ray, Player *player);
+float calculateHitDistance(Player *player, float hitX, float hitY, bool foundWallHit);
 
 bool isRayFacingDown(float angle) {
     return angle > 0 && angle < M_PI;
@@ -78,7 +79,7 @@ void castRay(Ray *ray, Player *player) {
     float nextHorzTouchY = yintercept;
 
     // Increment xstep and ystep until we find a wall
-    while (nextHorzTouchX >= 0 && nextHorzTouchX <= WINDOW_WIDTH && nextHorzTouchY >= 0 && nextHorzTouchY <= WINDOW_HEIGHT) {
+    while (inScreenBounds(nextHorzTouchX, nextHorzTouchY)) {
         float xToCheck = nextHorzTouchX;
         float yToCheck = nextHorzTouchY + (isRayFacingUp(ray->angle) ? -1 : 0);
 
@@ -122,7 +123,7 @@ void castRay(Ray *ray, Player *player) {
     float nextVertTouchY = yintercept;
 
     // Increment xstep and ystep until we find a wall
-    while (nextVertTouchX >= 0 && nextVertTouchX <= WINDOW_WIDTH && nextVertTouchY >= 0 && nextVertTouchY <= WINDOW_HEIGHT) {
+    while (inScreenBounds(nextVertTouchX, nextVertTouchY)) {
         float xToCheck = nextVertTouchX + (isRayFacingLeft(ray->angle) ? -1 : 0);
         float yToCheck = nextVertTouchY;
 
@@ -139,25 +140,26 @@ void castRay(Ray *ray, Player *player) {
         }
     }
 
-    // Calculate both horizontal and vertical hit distances and choose the smallest one
-    float horzHitDistance = foundHorzWallHit
-        ? distanceBetweenPoints(player->x, player->y, horzWallHitX, horzWallHitY)
-        : INT_MAX;
-    float vertHitDistance = foundVertWallHit
-        ? distanceBetweenPoints(player->x, player->y, vertWallHitX, vertWallHitY)
-        : INT_MAX;
+    float horizontalHitDistance = calculateHitDistance(player, horzWallHitX, horzWallHitY, foundHorzWallHit);
+    float verticalHitDistance = calculateHitDistance(player, vertWallHitX, vertWallHitY, foundVertWallHit);
 
-    if (vertHitDistance < horzHitDistance) {
-        ray->distance = vertHitDistance;
+    if (verticalHitDistance < horizontalHitDistance) {
+        ray->distance = verticalHitDistance;
         ray->wallHitX = vertWallHitX;
         ray->wallHitY = vertWallHitY;
         ray->wallHitContent = vertWallContent;
         ray->wasHitVertical = true;
     } else {
-        ray->distance = horzHitDistance;
+        ray->distance = horizontalHitDistance;
         ray->wallHitX = horzWallHitX;
         ray->wallHitY = horzWallHitY;
         ray->wallHitContent = horzWallContent;
         ray->wasHitVertical = false;
     }
+}
+
+float calculateHitDistance(Player *player, float hitX, float hitY, bool foundWallHit) {
+    return foundWallHit
+        ? distanceBetweenPoints(player->x, player->y, hitX, hitY)
+        : INT_MAX;
 }

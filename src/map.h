@@ -9,5 +9,6 @@ extern const int map[MAP_NUM_ROWS][MAP_NUM_COLS];
 
 bool mapHasWallAt(float x, float y);
 void renderMap(SDL_Renderer* renderer);
+bool inScreenBounds(float x, float y);
 
 #endif

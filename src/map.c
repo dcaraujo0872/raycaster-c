@@ -42,3 +42,7 @@ void renderMap(SDL_Renderer* renderer) {
         }
     }
 }
+
+bool inScreenBounds(float x, float y) {
+    return x >= 0 && x <= WINDOW_WIDTH && y >= 0 && y <= WINDOW_HEIGHT;
+}
