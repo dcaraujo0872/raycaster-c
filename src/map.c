@@ -1,4 +1,6 @@
 #include "map.h"
+#include <limits.h>
+#include "utils.h"
 
 const int map[MAP_NUM_ROWS][MAP_NUM_COLS] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ,1, 1, 1, 1, 1, 1, 1},
@@ -45,4 +47,14 @@ void renderMap(SDL_Renderer* renderer) {
 
 bool inScreenBounds(float x, float y) {
     return x >= 0 && x <= WINDOW_WIDTH && y >= 0 && y <= WINDOW_HEIGHT;
+}
+
+float calculateHitDistance(Player *player, GridIntersection *intersection) {
+    return intersection->foundWallHit
+        ? distanceBetweenPoints(player->x, player->y, intersection->wallHitX, intersection->wallHitY)
+        : INT_MAX;
+}
+
+int mapContentAt(float x, float y) {
+    return map[(int)floor(y / TILE_SIZE)][(int)floor(x / TILE_SIZE)];
 }

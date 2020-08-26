@@ -13,10 +13,6 @@ typedef struct Ray {
     int wallHitContent;
 } Ray;
 
-bool isRayFacingDown(float angle);
-bool isRayFacingUp(float angle);
-bool isRayFacingRight(float angle);
-bool isRayFacingLeft(float angle);
 void renderRays(SDL_Renderer* renderer, Ray *rays, Player *player);
 void castAllRays(Ray *rays, Player *player);
 
