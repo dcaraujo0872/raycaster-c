@@ -3,6 +3,7 @@
 #include "player.h"
 #include "map.h"
 #include "upng.h"
+#include "utils.h"
 #include "constants.h"
 
 SDL_Window* window = NULL;
@@ -149,13 +150,9 @@ void processInput(void) {
 }
 
 void update(void) {
-    // waste some time until we reach the target frame time length
-    while (!SDL_TICKS_PASSED(SDL_GetTicks(), ticksLastFrame + FRAME_TIME_LENGTH));
-
+    frameWait(ticksLastFrame);
     float deltaTime = (SDL_GetTicks() - ticksLastFrame) / 1000.0f;
-
     ticksLastFrame = SDL_GetTicks();
-
     movePlayer(&player, deltaTime);
     castAllRays(rays, &player);
 }
