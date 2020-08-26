@@ -1,32 +1,16 @@
 #include <stdio.h>
-#include <stdbool.h>
 #include <limits.h>
-#include <math.h>
 #include <SDL2/SDL.h>
 #include "upng.h"
 #include "constants.h"
 #include "ray.h"
 #include "player.h"
-
-const int map[MAP_NUM_ROWS][MAP_NUM_COLS] = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ,1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ,1, 1, 1, 1, 1, 1, 1},
-};
+#include "map.h"
+#include "utils.h"
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
-int isGameRunning = FALSE;
+int isGameRunning = false;
 int ticksLastFrame;
 uint32_t* colorBuffer = NULL;
 SDL_Texture* colorBufferTexture;
@@ -36,59 +20,6 @@ upng_t* pngTexture;
 Player player;
 Ray rays[NUM_RAYS];
 
-int mapHasWallAt(float x, float y) {
-    if (x < 0 || x > WINDOW_WIDTH || y < 0 || y > WINDOW_HEIGHT) {
-        return TRUE;
-    }
-    int mapGridIndexX = floor(x / TILE_SIZE);
-    int mapGridIndexY = floor(y / TILE_SIZE);
-    return map[mapGridIndexY][mapGridIndexX] != 0;
-}
-
-void movePlayer(float deltaTime) {
-    player.rotationAngle += player.turnDirection * player.turnSpeed * deltaTime;
-    float moveStep = player.walkDirection * player.walkSpeed * deltaTime;
-
-    float newPlayerX = player.x + cos(player.rotationAngle) * moveStep;
-    float newPlayerY = player.y + sin(player.rotationAngle) * moveStep;
-
-    if (!mapHasWallAt(newPlayerX, newPlayerY)) {
-        player.x = newPlayerX;
-        player.y = newPlayerY;
-    }
-}
-
-void renderPlayer(void) {
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_Rect playerRect = {
-        player.x * MINIMAP_SCALE_FACTOR,
-        player.y * MINIMAP_SCALE_FACTOR,
-        player.width * MINIMAP_SCALE_FACTOR,
-        player.height * MINIMAP_SCALE_FACTOR
-    };
-    SDL_RenderFillRect(renderer, &playerRect);
-
-    SDL_RenderDrawLine(
-        renderer,
-        MINIMAP_SCALE_FACTOR * player.x,
-        MINIMAP_SCALE_FACTOR * player.y,
-        MINIMAP_SCALE_FACTOR * player.x + cos(player.rotationAngle) * 40,
-        MINIMAP_SCALE_FACTOR * player.y + sin(player.rotationAngle) * 40
-    );
-}
-
-float normalizeAngle(float angle) {
-    angle = remainder(angle, TWO_PI);
-    if (angle < 0) {
-        angle = TWO_PI + angle;
-    }
-    return angle;
-}
-
-float distanceBetweenPoints(float x1, float y1, float x2, float y2) {
-    return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
-}
-
 void castRay(Ray *ray) {
     float xintercept, yintercept;
     float xstep, ystep;
@@ -96,7 +27,7 @@ void castRay(Ray *ray) {
     ///////////////////////////////////////////
     // HORIZONTAL RAY-GRID INTERSECTION CODE
     ///////////////////////////////////////////
-    int foundHorzWallHit = FALSE;
+    int foundHorzWallHit = false;
     float horzWallHitX = 0;
     float horzWallHitY = 0;
     int horzWallContent = 0;
@@ -129,7 +60,7 @@ void castRay(Ray *ray) {
             horzWallHitX = nextHorzTouchX;
             horzWallHitY = nextHorzTouchY;
             horzWallContent = map[(int)floor(yToCheck / TILE_SIZE)][(int)floor(xToCheck / TILE_SIZE)];
-            foundHorzWallHit = TRUE;
+            foundHorzWallHit = true;
             break;
         } else {
             nextHorzTouchX += xstep;
@@ -140,7 +71,7 @@ void castRay(Ray *ray) {
     ///////////////////////////////////////////
     // VERTICAL RAY-GRID INTERSECTION CODE
     ///////////////////////////////////////////
-    int foundVertWallHit = FALSE;
+    int foundVertWallHit = false;
     float vertWallHitX = 0;
     float vertWallHitY = 0;
     int vertWallContent = 0;
@@ -173,7 +104,7 @@ void castRay(Ray *ray) {
             vertWallHitX = nextVertTouchX;
             vertWallHitY = nextVertTouchY;
             vertWallContent = map[(int)floor(yToCheck / TILE_SIZE)][(int)floor(xToCheck / TILE_SIZE)];
-            foundVertWallHit = TRUE;
+            foundVertWallHit = true;
             break;
         } else {
             nextVertTouchX += xstep;
@@ -210,38 +141,6 @@ void castAllRays(void) {
         rays[i].rayAngle = normalizeAngle(rayAngle);
         castRay(&rays[i]);
         rayAngle += FOV_ANGLE / NUM_RAYS;
-    }
-}
-
-void renderMap(void) {
-    for (int i = 0; i < MAP_NUM_ROWS; i++) {
-        for (int j = 0; j < MAP_NUM_COLS; j++) {
-            int tileX = j * TILE_SIZE;
-            int tileY = i * TILE_SIZE;
-            int tileColor = map[i][j] != 0 ? 255 : 0;
-
-            SDL_SetRenderDrawColor(renderer, tileColor, tileColor, tileColor, 255);
-            SDL_Rect mapTileRect = {
-                tileX * MINIMAP_SCALE_FACTOR,
-                tileY * MINIMAP_SCALE_FACTOR,
-                TILE_SIZE * MINIMAP_SCALE_FACTOR,
-                TILE_SIZE * MINIMAP_SCALE_FACTOR
-            };
-            SDL_RenderFillRect(renderer, &mapTileRect);
-        }
-    }
-}
-
-void renderRays(void) {
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    for (int i = 0; i < NUM_RAYS; i++) {
-        SDL_RenderDrawLine(
-            renderer,
-            MINIMAP_SCALE_FACTOR * player.x,
-            MINIMAP_SCALE_FACTOR * player.y,
-            MINIMAP_SCALE_FACTOR * rays[i].wallHitX,
-            MINIMAP_SCALE_FACTOR * rays[i].wallHitY
-        );
     }
 }
 
@@ -291,30 +190,14 @@ void generate3DProjection(void) {
     }
 }
 
-void clearColorBuffer(uint32_t color) {
-    for (int x = 0; x < WINDOW_WIDTH; x++) {
-        for (int y = 0; y < WINDOW_HEIGHT; y++) {
-            colorBuffer[(WINDOW_WIDTH * y) + x] = color;
-        }
-    }
-}
-
-void renderColorBuffer(void) {
-    SDL_UpdateTexture(
-        colorBufferTexture,
-        NULL,
-        colorBuffer,
-        (int)((uint32_t)WINDOW_WIDTH * sizeof(uint32_t))
-    );
-    SDL_RenderCopy(renderer, colorBufferTexture, NULL, NULL);
-}
-
 int initializeWindow(void);
 void setup(void);
 void processInput(void);
 void update(void);
 void render(void);
 void destroyWindow(void);
+void clearColorBuffer(uint32_t color);
+void renderColorBuffer(void);
 
 int main() {
     isGameRunning = initializeWindow();
@@ -328,10 +211,12 @@ int main() {
     return 0;
 }
 
+// GAME LOOP
+
 int initializeWindow(void) {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         fprintf(stderr, "Error initializing SDL.\n");
-        return FALSE;
+        return false;
     }
     window = SDL_CreateWindow(
         NULL,
@@ -343,16 +228,16 @@ int initializeWindow(void) {
     );
     if (!window) {
         fprintf(stderr, "Error creating SDL window.\n");
-        return FALSE;
+        return false;
     }
     renderer = SDL_CreateRenderer(window, -1, 0);
     if (!renderer) {
         fprintf(stderr, "Error creating SDL renderer.\n");
-        return FALSE;
+        return false;
     }
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    return TRUE;
+    return true;
 }
 
 void setup(void) {
@@ -362,9 +247,9 @@ void setup(void) {
     player.height = 1;
     player.turnDirection = 0;
     player.walkDirection = 0;
-    player.rotationAngle = PI / 2;
+    player.rotationAngle = M_PI / 2;
     player.walkSpeed = 100;
-    player.turnSpeed = 45 * (PI / 180);
+    player.turnSpeed = 45 * (M_PI / 180);
 
     // allocate the total amount of bytes in memory to hold our colorbuffer
     colorBuffer = (uint32_t*) malloc(sizeof(uint32_t) * (uint32_t)WINDOW_WIDTH * (uint32_t)WINDOW_HEIGHT);
@@ -396,12 +281,12 @@ void processInput(void) {
     SDL_PollEvent(&event);
     switch (event.type) {
         case SDL_QUIT: {
-            isGameRunning = FALSE;
+            isGameRunning = false;
             break;
         }
         case SDL_KEYDOWN: {
             if (event.key.keysym.sym == SDLK_ESCAPE) {
-                isGameRunning = FALSE;
+                isGameRunning = false;
             }
             if (event.key.keysym.sym == SDLK_UP) {
                 player.walkDirection = +1;
@@ -443,7 +328,7 @@ void update(void) {
 
     ticksLastFrame = SDL_GetTicks();
 
-    movePlayer(deltaTime);
+    movePlayer(&player, deltaTime);
     castAllRays();
 }
 
@@ -453,9 +338,9 @@ void render(void) {
     generate3DProjection();
     renderColorBuffer();
     clearColorBuffer(0xFF000000);
-    renderMap();
-    renderRays();
-    renderPlayer();
+    renderMap(renderer);
+    renderRays(renderer, rays, &player);
+    renderPlayer(renderer, &player);
     SDL_RenderPresent(renderer);
 }
 
@@ -465,4 +350,24 @@ void destroyWindow(void) {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+}
+
+// RENDERING
+
+void clearColorBuffer(uint32_t color) {
+    for (int x = 0; x < WINDOW_WIDTH; x++) {
+        for (int y = 0; y < WINDOW_HEIGHT; y++) {
+            colorBuffer[(WINDOW_WIDTH * y) + x] = color;
+        }
+    }
+}
+
+void renderColorBuffer(void) {
+    SDL_UpdateTexture(
+        colorBufferTexture,
+        NULL,
+        colorBuffer,
+        (int)((uint32_t)WINDOW_WIDTH * sizeof(uint32_t))
+    );
+    SDL_RenderCopy(renderer, colorBufferTexture, NULL, NULL);
 }

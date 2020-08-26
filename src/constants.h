@@ -1,11 +1,8 @@
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
 
-#define FALSE 0
-#define TRUE 1
-
-#define PI 3.14159265
-#define TWO_PI 6.28318530
+#include <stdbool.h>
+#include <math.h>
 
 #define TILE_SIZE 64
 #define MAP_NUM_ROWS 13
@@ -20,7 +17,7 @@
 #define TEXTURE_WIDTH 64
 #define TEXTURE_HEIGHT 64
 
-#define FOV_ANGLE (60 * (PI / 180))
+#define FOV_ANGLE (60 * (M_PI / 180))
 
 #define NUM_RAYS WINDOW_WIDTH
 
