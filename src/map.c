@@ -27,7 +27,7 @@ bool mapHasWallAt(float x, float y) {
     return map[mapGridIndexY][mapGridIndexX] != 0;
 }
 
-void renderMap(SDL_Renderer* renderer) {
+void renderMap(SDL_Renderer *renderer) {
     for (int i = 0; i < MAP_NUM_ROWS; i++) {
         for (int j = 0; j < MAP_NUM_COLS; j++) {
             int tileX = j * TILE_SIZE;

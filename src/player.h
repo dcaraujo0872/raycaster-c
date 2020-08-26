@@ -16,6 +16,6 @@ typedef struct Player {
 } Player;
 
 void movePlayer(Player *player, float deltaTime);
-void renderPlayer(SDL_Renderer* renderer, Player *player);
+void renderPlayer(SDL_Renderer *renderer, Player *player);
 
 #endif

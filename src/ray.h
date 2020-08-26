@@ -13,7 +13,7 @@ typedef struct Ray {
     int wallHitContent;
 } Ray;
 
-void renderRays(SDL_Renderer* renderer, Ray *rays, Player *player);
+void renderRays(SDL_Renderer *renderer, Ray *rays, Player *player);
 void castAllRays(Ray *rays, Player *player);
 
 #endif

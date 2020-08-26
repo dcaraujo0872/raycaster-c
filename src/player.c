@@ -15,7 +15,7 @@ void movePlayer(Player *player, float deltaTime) {
     }
 }
 
-void renderPlayer(SDL_Renderer* renderer, Player *player) {
+void renderPlayer(SDL_Renderer *renderer, Player *player) {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_Rect playerRect = {
         player->x * MINIMAP_SCALE_FACTOR,

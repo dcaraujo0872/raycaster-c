@@ -11,7 +11,7 @@ bool isRayFacingUp(float angle);
 bool isRayFacingRight(float angle);
 bool isRayFacingLeft(float angle);
 
-void renderRays(SDL_Renderer* renderer, Ray *rays, Player *player) {
+void renderRays(SDL_Renderer *renderer, Ray *rays, Player *player) {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     for (int i = 0; i < NUM_RAYS; i++) {
         SDL_RenderDrawLine(

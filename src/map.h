@@ -16,7 +16,7 @@ typedef struct GridIntersection {
 } GridIntersection;
 
 bool mapHasWallAt(float x, float y);
-void renderMap(SDL_Renderer* renderer);
+void renderMap(SDL_Renderer *renderer);
 bool inScreenBounds(float x, float y);
 float calculateHitDistance(Player *player, GridIntersection *intersection);
 int mapContentAt(float x, float y);

@@ -6,14 +6,14 @@
 #include "utils.h"
 #include "constants.h"
 
-SDL_Window* window = NULL;
-SDL_Renderer* renderer = NULL;
+SDL_Window *window = NULL;
+SDL_Renderer *renderer = NULL;
 int isGameRunning = false;
 int ticksLastFrame;
-uint32_t* colorBuffer = NULL;
-SDL_Texture* colorBufferTexture;
-uint32_t* wallTexture;
-upng_t* pngTexture;
+uint32_t *colorBuffer = NULL;
+SDL_Texture *colorBufferTexture;
+uint32_t *wallTexture;
+upng_t *pngTexture;
 
 Player player;
 Ray rays[NUM_RAYS];
@@ -199,9 +199,9 @@ void renderColorBuffer(void) {
 
 void generate3DProjection(void) {
     for (int i = 0; i < NUM_RAYS; i++) {
-        float perpDistance = rays[i].distance * cos(rays[i].angle - player.rotationAngle);
-        float distanceProjPlane = (WINDOW_WIDTH / 2) / tan(FOV_ANGLE / 2);
-        float projectedWallHeight = (TILE_SIZE / perpDistance) * distanceProjPlane;
+        float perpendicularDistance = rays[i].distance * cos(rays[i].angle - player.rotationAngle);
+        float projectionPlaneDistance = (WINDOW_WIDTH / 2) / tan(FOV_ANGLE / 2);
+        float projectedWallHeight = (TILE_SIZE / perpendicularDistance) * projectionPlaneDistance;
 
         int wallStripHeight = (int)projectedWallHeight;
 
@@ -212,8 +212,9 @@ void generate3DProjection(void) {
         wallBottomPixel = wallBottomPixel > WINDOW_HEIGHT ? WINDOW_HEIGHT : wallBottomPixel;
 
         // set the color of the ceiling
-        for (int y = 0; y < wallTopPixel; y++)
+        for (int y = 0; y < wallTopPixel; y++) {
             colorBuffer[(WINDOW_WIDTH * y) + i] = 0xFF444444;
+        }
 
         int textureOffsetX;
         if (rays[i].wasHitVertical) {
